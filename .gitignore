@@ -30,3 +30,9 @@
 *.exe
 *.out
 *.app
+
+# indexed vulkan api 
+tags
+
+# binary
+VulkanTest
