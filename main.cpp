@@ -5,6 +5,8 @@
 #include <stdexcept>
 #include <functional>
 #include <cstdlib>
+#include <vector>
+#include <cstring>
 
 const int WIDTH = 800;
 const int HEIGHT = 600;
@@ -55,6 +57,19 @@ private:
 		if (vkCreateInstance(&createInfo, nullptr, &instance) != VK_SUCCESS) {
 			throw std::runtime_error("failed to create instance!");
 		}
+
+		uint32_t extensionCount = 0;
+		vkEnumerateInstanceExtensionProperties(nullptr, &extensionCount, nullptr);
+		std::vector<VkExtensionProperties> extensions(extensionCount);
+		vkEnumerateInstanceExtensionProperties(nullptr, &extensionCount, extensions.data());
+
+		std::cout << "available extensions:" << '\n';
+
+		for (const auto& extension : extensions) {
+			std::cout << "\t" << extension.extensionName << "\n";
+		}
+
+		checkRequiredExtensionsPresent(extensions, glfwExtensions, glfwExtensionCount);
 	}
 
 	void initVulkan() {
@@ -68,11 +83,28 @@ private:
 	}
 
 	void cleanup() {
+		vkDestroyInstance(instance, nullptr);
+
 		glfwDestroyWindow(window);
 
 		glfwTerminate();
 	}
 
+	void checkRequiredExtensionsPresent(const std::vector<VkExtensionProperties> availableExtensions, const char **requiredExtensions, const uint32_t requiredExtensionsCount) {
+		for (uint32_t x = 0; x < requiredExtensionsCount; x++) {
+			bool isPresent {false};
+			for (const VkExtensionProperties &extension : availableExtensions) {
+				if (strcmp(extension.extensionName, requiredExtensions[x]) == 0) {
+					isPresent = true;
+					continue;
+				}
+			}
+
+			if (!isPresent) {
+				throw std::runtime_error("lack of required extension");
+			}
+		}
+	}
 };
 
 int main() {
