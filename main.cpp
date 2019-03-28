@@ -30,6 +30,12 @@ public:
 		cleanup();
 	}
 
+	static VKAPI_ATTR VkBool32 VKAPI_CALL debugCallback(VkDebugUtilsMessageSeverityFlagBitsEXT messageSeverity, VkDebugUtilsMessageTypeFlagsEXT messageType, const VkDebugUtilsMessengerCallbackDataEXT *pCallbackData, void *pUserData) {
+		std::cerr << "validation layer: " << pCallbackData->pMessage << std::endl;
+
+		return VK_FALSE;
+	}
+
 private:
 	GLFWwindow *window;
 	VkInstance instance;
@@ -60,6 +66,10 @@ private:
 		createInfo.sType = VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO;
 		createInfo.pApplicationInfo = &appInfo;
 
+		auto extensions = getRequiredExtensions();
+		createInfo.enabledExtensionCount = static_cast<uint32_t>(extensions.size());
+		createInfo.ppEnabledExtensionNames = extensions.data();
+
 		if (enableValidationLayers) {
 			createInfo.enabledLayerCount = static_cast<uint32_t>(validationLayers.size());
 			createInfo.ppEnabledLayerNames = validationLayers.data();
@@ -67,30 +77,9 @@ private:
 			createInfo.enabledLayerCount = 0;
 		}
 
-		uint32_t glfwExtensionCount = 0;
-		const char **glfwExtensions;
-
-		glfwExtensions = glfwGetRequiredInstanceExtensions(&glfwExtensionCount);
-		createInfo.enabledExtensionCount = glfwExtensionCount;
-		createInfo.ppEnabledExtensionNames = glfwExtensions;
-		createInfo.enabledLayerCount = 0;
-
 		if (vkCreateInstance(&createInfo, nullptr, &instance) != VK_SUCCESS) {
 			throw std::runtime_error("failed to create instance!");
 		}
-
-		uint32_t extensionCount = 0;
-		vkEnumerateInstanceExtensionProperties(nullptr, &extensionCount, nullptr);
-		std::vector<VkExtensionProperties> extensions(extensionCount);
-		vkEnumerateInstanceExtensionProperties(nullptr, &extensionCount, extensions.data());
-
-		std::cout << "available extensions:" << '\n';
-
-		for (const auto& extension : extensions) {
-			std::cout << "\t" << extension.extensionName << "\n";
-		}
-
-		checkRequiredExtensionsPresent(extensions, glfwExtensions, glfwExtensionCount);
 	}
 
 	void initVulkan() {
@@ -109,22 +98,6 @@ private:
 		glfwDestroyWindow(window);
 
 		glfwTerminate();
-	}
-
-	void checkRequiredExtensionsPresent(const std::vector<VkExtensionProperties> availableExtensions, const char **requiredExtensions, const uint32_t requiredExtensionsCount) {
-		for (uint32_t x = 0; x < requiredExtensionsCount; x++) {
-			bool isPresent {false};
-			for (const VkExtensionProperties &extension : availableExtensions) {
-				if (strcmp(extension.extensionName, requiredExtensions[x]) == 0) {
-					isPresent = true;
-					continue;
-				}
-			}
-
-			if (!isPresent) {
-				throw std::runtime_error("lack of required extension");
-			}
-		}
 	}
 
 	bool checkValidationLayerSupport() {
@@ -148,6 +121,20 @@ private:
 		}
 
 		return true;
+	}
+
+	std::vector<const char*> getRequiredExtensions() {
+		uint32_t glfwExtensionCount = 0;
+		const char** glfwExtensions;
+		glfwExtensions = glfwGetRequiredInstanceExtensions(&glfwExtensionCount);
+
+		std::vector<const char*> extensions(glfwExtensions, glfwExtensions + glfwExtensionCount);
+
+		if (enableValidationLayers) {
+			extensions.push_back(VK_EXT_DEBUG_UTILS_EXTENSION_NAME);
+		}
+
+		return extensions;
 	}
 };
 
