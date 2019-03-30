@@ -376,6 +376,20 @@ private:
 
 		return details;
 	}
+
+	VkSurfaceFormatKHR chooseSwapSurfaceFormat(const std::vector<VkSurfaceFormatKHR> &avaliableFormats) {
+		if (avaliableFormats.size() == 1 && avaliableFormats[0].format == VK_FORMAT_UNDEFINED) {
+			return {VK_FORMAT_B8G8R8A8_UNORM, VK_COLOR_SPACE_SRGB_NONLINEAR_KHR};
+		}
+		
+		for (const auto &avaliableFormat : avaliableFormats) {
+			if (avaliableFormat.format == VK_FORMAT_B8G8R8A8_UNORM && avaliableFormat.colorSpace == VK_COLOR_SPACE_SRGB_NONLINEAR_KHR) {
+				return avaliableFormat;
+			}
+		}
+
+		return avaliableFormats[0];
+	}
 };
 
 int main() {
