@@ -152,7 +152,7 @@ private:
 		}
 	}
 
-	void pickPhisicalDevice() {
+	void pickPhysicalDevice() {
 		uint32_t deviceCount = 0;
 		vkEnumeratePhysicalDevices(instance, &deviceCount, nullptr);
 
@@ -176,7 +176,13 @@ private:
 	}
 
 	bool isDeviceSuitable(VkPhysicalDevice device) {
-		return true;
+		VkPhysicalDeviceProperties deviceProperties;
+		vkGetPhysicalDeviceProperties(device, &deviceProperties);
+
+		VkPhysicalDeviceFeatures deviceFeatures;
+		vkGetPhysicalDeviceFeatures(device, &deviceFeatures);
+
+		return deviceProperties.deviceType == VK_PHYSICAL_DEVICE_TYPE_DISCRETE_GPU && deviceFeatures.geometryShader;
 	}
 
 	bool checkValidationLayerSupport() {
