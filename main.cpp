@@ -21,6 +21,15 @@ const std::vector<const char*> validationLayers = {
 	const bool enableValidationLayers = true;
 #endif
 
+VkResult CreateDebugUtilsMessengerEXT(VkInstance instance, const VkDebugUtilsMessengerCreateInfoEXT *pCreateInfo, const VkAllocationCallbacks *pAllocator, VkDebugUtilsMessengerEXT *pDebugMessenger) {
+	auto procedureAddressFunction = (PFN_vkCreateDebugUtilsMessengerEXT) vkGetInstanceProcAddr(instance, "vkCreateDebugUtilsMessengerEXT");
+	if (procedureAddressFunction != nullptr) {
+		return procedureAddressFunction(instance, pCreateInfo, pAllocator, pDebugMessenger);
+	} else {
+		return VK_ERROR_EXTENSION_NOT_PRESENT;
+	}
+}
+
 class HelloTriangleApplication {
 public:
 	void run() {
@@ -110,6 +119,10 @@ private:
 			createInfo.messageType = VK_DEBUG_UTILS_MESSAGE_TYPE_GENERAL_BIT_EXT | VK_DEBUG_UTILS_MESSAGE_TYPE_VALIDATION_BIT_EXT | VK_DEBUG_UTILS_MESSAGE_TYPE_PERFORMANCE_BIT_EXT;
 			createInfo.pfnUserCallback = debugCallback;
 			createInfo.pUserData = nullptr;
+
+			if (CreateDebugUtilsMessengerEXT(instance, &createInfo, nullptr, &debugMessenger) != VK_SUCCESS) {
+				throw std::runtime_error("failed to set up debug messenger!");
+			}
 		}
 	}
 
