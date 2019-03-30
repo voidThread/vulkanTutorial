@@ -68,6 +68,7 @@ private:
 	// logical 
 	VkDevice device;
 	VkQueue graphicsQueue;
+	VkSurfaceKHR surface;
 
 	/// \breif Callback consumed by debug messengers - need expand output
 	static VKAPI_ATTR VkBool32 VKAPI_CALL debugCallback(VkDebugUtilsMessageSeverityFlagBitsEXT messageSeverity, VkDebugUtilsMessageTypeFlagsEXT messageType, const VkDebugUtilsMessengerCallbackDataEXT *pCallbackData, void *pUserData) {
@@ -127,6 +128,7 @@ private:
 	void initVulkan() {
 		createInstance();
 		setupDebugMessenger();
+		createSurface();
 		pickPhysicalDevice();
 		createLogicalDevice();
 	}
@@ -143,11 +145,18 @@ private:
 			DestroyDebugUtilsMessengerEXT(instance, debugMessenger, nullptr);
 		}
 
+		vkDestroySurfaceKHR(instance, surface, nullptr);
 		vkDestroyInstance(instance, nullptr);
 
 		glfwDestroyWindow(window);
 
 		glfwTerminate();
+	}
+
+	void createSurface() {
+		if (glfwCreateWindowSurface(instance, window, nullptr, &surface) != VK_SUCCESS) {
+			throw std::runtime_error("failed to create window surface!");
+		}
 	}
 
 	void createLogicalDevice() {
