@@ -11,16 +11,19 @@
 const int WIDTH = 800;
 const int HEIGHT = 600;
 
+/// \brief Additional layers
 const std::vector<const char*> validationLayers = {
 	"VK_LAYER_LUNARG_standard_validation"
 };
 
+// set flag in compiler
 #ifdef NDEBUG
 	const bool enableValidationLayers = false;
 #else
 	const bool enableValidationLayers = true;
 #endif
 
+/// \brief Create required messengers during running application - allocator is optional	
 VkResult CreateDebugUtilsMessengerEXT(VkInstance instance, const VkDebugUtilsMessengerCreateInfoEXT *pCreateInfo, const VkAllocationCallbacks *pAllocator, VkDebugUtilsMessengerEXT *pDebugMessenger) {
 	auto procedureAddressFunction = (PFN_vkCreateDebugUtilsMessengerEXT) vkGetInstanceProcAddr(instance, "vkCreateDebugUtilsMessengerEXT");
 	if (procedureAddressFunction != nullptr) {
@@ -30,7 +33,7 @@ VkResult CreateDebugUtilsMessengerEXT(VkInstance instance, const VkDebugUtilsMes
 	}
 }
 
-
+/// \brief Destroying messengers constructed on initialize application
 void DestroyDebugUtilsMessengerEXT(VkInstance instance, VkDebugUtilsMessengerEXT debugMessenger, const VkAllocationCallbacks *pAllocator) {
 	auto procedureAddress = (PFN_vkDestroyDebugUtilsMessengerEXT) vkGetInstanceProcAddr(instance, "vkDestroyDebugUtilsMessengerEXT");
 	if (procedureAddress != nullptr) {
@@ -48,20 +51,23 @@ public:
 		cleanup();
 	}
 
+private:
+	GLFWwindow *window;
+	VkInstance instance;
+	VkDebugUtilsMessengerEXT debugMessenger;
+
+	/// \breif Callback consumed by debug messengers - need expand output
 	static VKAPI_ATTR VkBool32 VKAPI_CALL debugCallback(VkDebugUtilsMessageSeverityFlagBitsEXT messageSeverity, VkDebugUtilsMessageTypeFlagsEXT messageType, const VkDebugUtilsMessengerCallbackDataEXT *pCallbackData, void *pUserData) {
 		std::cerr << "validation layer: " << pCallbackData->pMessage << std::endl;
 
 		return VK_FALSE;
 	}
 
-private:
-	GLFWwindow *window;
-	VkInstance instance;
-	VkDebugUtilsMessengerEXT debugMessenger;
-
+	/// \brief Create window by GLFW - disable functionality provided for openGL
 	void initWindow() {
 		glfwInit();
 
+		// openGl disable flags
 		glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
 		glfwWindowHint(GLFW_RESIZABLE, GLFW_FALSE);
 		
@@ -73,7 +79,9 @@ private:
 			throw std::runtime_error("validation layers requested, but not avaliable!");
 		}
 
+		// constructed primary app info
 		VkApplicationInfo appInfo = {};
+		// each vulkan info struct need to have set sType
 		appInfo.sType = VK_STRUCTURE_TYPE_APPLICATION_INFO;
 		appInfo.pApplicationName = "Hello Triangle";
 		appInfo.applicationVersion = VK_MAKE_VERSION(1, 0, 0);
@@ -81,6 +89,7 @@ private:
 		appInfo.engineVersion = VK_MAKE_VERSION(1, 0, 0);
 		appInfo.apiVersion = VK_API_VERSION_1_0;
 
+		// strucutre which contains info about needed extensions and layers for runtime
 		VkInstanceCreateInfo createInfo = {};
 		createInfo.sType = VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO;
 		createInfo.pApplicationInfo = &appInfo;
@@ -96,6 +105,7 @@ private:
 			createInfo.enabledLayerCount = 0;
 		}
 
+		// create vulkan instance based on previous created information
 		if (vkCreateInstance(&createInfo, nullptr, &instance) != VK_SUCCESS) {
 			throw std::runtime_error("failed to create instance!");
 		}
