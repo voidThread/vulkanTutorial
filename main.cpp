@@ -9,6 +9,7 @@
 #include <cstring>
 #include <optional>
 #include <set>
+#include <algorithm>
 
 const int WIDTH = 800;
 const int HEIGHT = 600;
@@ -403,6 +404,18 @@ private:
 		}
 
 		return bestMode;
+	}
+
+	VkExtent2D chooseSwapExtent(const VkSurfaceCapabilitiesKHR &capabilities) {
+		if (capabilities.currentExtent.width != std::numeric_limits<uint32_t>::max()) {
+			return capabilities.currentExtent;
+		} else {
+			VkExtent2D actualExtent {WIDTH, HEIGHT};
+			actualExtent.width = std::max(capabilities.minImageExtent.width, std::min(capabilities.maxImageExtent.width, actualExtent.width));
+			actualExtent.height = std::max(capabilities.minImageExtent.height, std::min(capabilities.maxImageExtent.height, actualExtent.height));
+
+			return actualExtent;
+		}
 	}
 };
 
