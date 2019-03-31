@@ -390,6 +390,20 @@ private:
 
 		return avaliableFormats[0];
 	}
+
+	VkPresentModeKHR chooseSwapPresentMOde(const std::vector<VkPresentModeKHR> &avaliablePresentModes) {
+		VkPresentModeKHR bestMode = VK_PRESENT_MODE_FIFO_KHR;
+
+		for (const auto &avaliablePresentMode : avaliablePresentModes) {
+			if (avaliablePresentMode == VK_PRESENT_MODE_MAILBOX_KHR) {
+				return avaliablePresentMode;
+			} else if (avaliablePresentMode == VK_PRESENT_MODE_IMMEDIATE_KHR) {
+				bestMode = avaliablePresentMode;
+			}
+		}
+
+		return bestMode;
+	}
 };
 
 int main() {
