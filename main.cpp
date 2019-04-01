@@ -318,8 +318,6 @@ private:
 		auto vertShaderCode = readFile("shaders/vert.spv");
 		auto fragShaderCode = readFile("shaders/frag.spv");
 
-		std::cout << vertShaderCode.size() << '\n' << fragShaderCode.size();
-
 		VkShaderModule vertShaderModule = createShaderModule(vertShaderCode);
 		VkShaderModule fragShaderModule = createShaderModule(fragShaderCode);
 		
@@ -336,6 +334,26 @@ private:
 		fragShaderStageInfo.pName = "main";
 
 		VkPipelineShaderStageCreateInfo shaderStages [] = {vertShaderStageInfo, fragShaderStageInfo};
+
+		VkPipelineVertexInputStateCreateInfo vertexInputInfo {};
+		vertexInputInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO;
+		vertexInputInfo.vertexBindingDescriptionCount = 0;
+		vertexInputInfo.pVertexBindingDescriptions = nullptr;
+		vertexInputInfo.vertexAttributeDescriptionCount = 0;
+		vertexInputInfo.pVertexAttributeDescriptions = nullptr;
+
+		VkPipelineInputAssemblyStateCreateInfo inputAssembly {};
+		inputAssembly.sType = VK_STRUCTURE_TYPE_PIPELINE_INPUT_ASSEMBLY_STATE_CREATE_INFO;
+		inputAssembly.topology = VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST;
+		inputAssembly.primitiveRestartEnable = VK_FALSE;
+
+		VkViewport viewport {};
+		viewport.x = 0.0f;
+		viewport.y = 0.0f;
+		viewport.width = (float)swapChainExtent.width;
+		viewport.height = (float)swapChainExtent.height;
+		viewport.minDepth = 0.0f;
+		viewport.maxDepth = 1.0f;
 
 		vkDestroyShaderModule(device, fragShaderModule, nullptr);
 		vkDestroyShaderModule(device, vertShaderModule, nullptr);
