@@ -101,6 +101,7 @@ private:
 	std::vector<VkImage> swapChainImages;
 	std::vector<VkImageView> swapChainImageViews;
 	std::vector<VkFramebuffer> swapChainFramebuffers;
+	std::vector<VkCommandBuffer> commandBuffers;
 
 	/// \breif Callback consumed by debug messengers - need expand output
 	static VKAPI_ATTR VkBool32 VKAPI_CALL debugCallback(VkDebugUtilsMessageSeverityFlagBitsEXT messageSeverity, VkDebugUtilsMessageTypeFlagsEXT messageType, const VkDebugUtilsMessengerCallbackDataEXT *pCallbackData, void *pUserData) {
@@ -168,6 +169,8 @@ private:
 		createRenderPass();
 		createGraphicsPipeline();
 		createFramebuffers();
+		createCommandPool();
+		createCommandBuffers();
 	}
 
 	void mainLoop() {
@@ -534,6 +537,10 @@ private:
 		if (vkCreateCommandPool(device, &poolInfo, nullptr, &commandPool) != VK_SUCCESS) {
 			throw std::runtime_error("failed to create command pool!");
 		}
+	}
+
+	void createCommandBuffers() {
+		commandBuffers.resize(swapChainFramebuffers.size());
 	}
 
 	void setupDebugMessenger() {
