@@ -98,6 +98,7 @@ private:
 
 	std::vector<VkImage> swapChainImages;
 	std::vector<VkImageView> swapChainImageViews;
+	std::vector<VkFramebuffer> swapChainFramebuffers;
 
 	/// \breif Callback consumed by debug messengers - need expand output
 	static VKAPI_ATTR VkBool32 VKAPI_CALL debugCallback(VkDebugUtilsMessageSeverityFlagBitsEXT messageSeverity, VkDebugUtilsMessageTypeFlagsEXT messageType, const VkDebugUtilsMessengerCallbackDataEXT *pCallbackData, void *pUserData) {
@@ -164,6 +165,7 @@ private:
 		createImageViews();
 		createRenderPass();
 		createGraphicsPipeline();
+		createFramebuffers();
 	}
 
 	void mainLoop() {
@@ -173,6 +175,10 @@ private:
 	}
 
 	void cleanup() {
+		for (const auto &framebuffer : swapChainFramebuffers) {
+			vkDestroyFramebuffer(device, framebuffer, nullptr);
+		}
+
 		vkDestroyPipeline(device, graphicsPipeline, nullptr);
 		vkDestroyPipelineLayout(device, pipelineLayout, nullptr);
 		vkDestroyRenderPass(device, renderPass, nullptr);
@@ -486,6 +492,32 @@ private:
 			throw std::runtime_error("failed to create render pass!");
 		}
 
+	}
+
+	void createFramebuffers() {
+		swapChainFramebuffers.resize(swapChainImageViews.size());
+
+		int itemNumber = 0;
+		auto createBuffer = [&](const VkImageView &imageView) {
+			VkImageView attachments [] = {imageView};
+
+			VkFramebufferCreateInfo framebufferInfo {};
+			framebufferInfo.sType = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO;
+			framebufferInfo.renderPass = renderPass;
+			framebufferInfo.attachmentCount = 1;
+			framebufferInfo.pAttachments = attachments;
+			framebufferInfo.width = swapChainExtent.width;
+			framebufferInfo.height = swapChainExtent.height;
+			framebufferInfo.layers = 1;
+
+			if (vkCreateFramebuffer(device, &framebufferInfo, nullptr, &swapChainFramebuffers[itemNumber]) != VK_SUCCESS) {
+				throw std::runtime_error("failed to create framebuffers!");
+			}
+
+			itemNumber++;
+		};
+
+		std::for_each(swapChainImageViews.begin(), swapChainImageViews.end(), createBuffer);
 	}
 
 	void setupDebugMessenger() {
